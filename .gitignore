@@ -1,0 +1,6 @@
+node_modules/
+.env
+database/users.json
+database/categories.json
+database/products.json
+database/stocks.json

@@ -1,0 +1,14 @@
+{
+  "transactions": [
+    {
+      "id": 1764261779492,
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "type": "saldo",
+      "productName": "CANVA PRO HEAD",
+      "qty": 1,
+      "total": 2700,
+      "createdAt": "2025-11-27T16:42:59.492Z"
+    }
+  ]
+}

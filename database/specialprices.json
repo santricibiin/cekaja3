@@ -1,0 +1,14 @@
+{
+  "prices": {
+    "canvahead": [
+      {
+        "minQty": 3,
+        "price": 1000
+      },
+      {
+        "minQty": 2,
+        "price": 1500
+      }
+    ]
+  }
+}
