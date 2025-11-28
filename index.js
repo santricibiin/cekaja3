@@ -2,12 +2,18 @@ const { Telegraf, Markup } = require('telegraf');
 const QRCode = require('qrcode');
 const express = require('express');
 const axios = require('axios');
-const { botToken, qrisCode } = require('./config/config');
+const fs = require('fs');
+const path = require('path');
+const archiver = require('archiver');
+const { botToken, qrisCode, danaQrisCode } = require('./config/config');
 const QrisAPI = require('./handlers/qrisAPI');
+const DanaAPI = require('./handlers/danaAPI');
 const { isAdmin } = require('./middleware/auth');
 const { getAllCategories } = require('./database/categories');
 const { getProductsByCategory } = require('./database/products');
 const { getStockCount, useStock } = require('./database/stocks');
+const { trackActivity } = require('./database/useractivities');
+const { getSoldCount, incrementSold } = require('./database/soldcount');
 
 const startHandler = require('./handlers/start');
 const balanceHandler = require('./handlers/user/balance');
@@ -28,12 +34,30 @@ const setPriceHandler = require('./handlers/admin/setprice');
 const laporanHandler = require('./handlers/admin/laporan');
 const autobackupHandler = require('./handlers/admin/autobackup');
 const { listUsrHandler, listUsrPageHandler, listUsrPageInfoHandler } = require('./handlers/admin/listusr');
+const activityHandler = require('./handlers/admin/activity');
+const editViewStokHandler = require('./handlers/admin/editviewstok');
+const paymentGatewayHandler = require('./handlers/admin/paymentgateway');
 
 const bot = new Telegraf(botToken);
 const app = express();
 const qrisAPI = new QrisAPI();
+const danaAPI = new DanaAPI();
 const editQtyState = {};
 const depositState = {}; // Track users in deposit flow
+
+const safeAnswerCallback = async (ctx, text = undefined) => {
+  try {
+    await ctx.answerCbQuery(text);
+  } catch (error) {
+    // Ignore timeout errors
+    if (error.description?.includes('query is too old') || 
+        error.description?.includes('query ID is invalid')) {
+      console.log('⚠️  Callback query expired, ignoring...');
+      return;
+    }
+    throw error;
+  }
+};
 
 const safeEditMessage = async (ctx, text, extra) => {
   try {
@@ -107,6 +131,100 @@ const generateDynamicQRIS = async (amount, orderId) => {
   }
 };
 
+const handleDepositGateway = async (ctx, amount, gateway) => {
+  const uniqueCode = Math.floor(Math.random() * 401) + 100;
+  const totalWithCode = amount + uniqueCode;
+  
+  try {
+    const depositId = `DEPOSIT-${gateway.toUpperCase()}-${ctx.from.id}-${Date.now()}`;
+    let qrBuffer;
+    let gatewayIcon, gatewayName;
+    
+    // Generate QRIS based on gateway
+    if (gateway === 'nobu') {
+      gatewayIcon = '🏦';
+      gatewayName = 'Nobu Bank';
+      qrBuffer = await generateDynamicQRIS(totalWithCode, depositId);
+    } else if (gateway === 'dana') {
+      gatewayIcon = '⚡';
+      gatewayName = 'DANA QRIS';
+      // Generate DANA QRIS using DANA code
+      const data = {
+        qrisCode: danaQrisCode,
+        nominal: totalWithCode.toString(),
+        feeType: 'r',
+        fee: '0',
+        includeFee: false
+      };
+      const response = await axios.post(
+        'https://qris-statis-to-dinamis.vercel.app/generate-qris',
+        data,
+        { headers: { 'Content-Type': 'application/json' }, timeout: 15000 }
+      );
+      if (!response.data?.qrCode) {
+        throw new Error('Failed to generate DANA QRIS');
+      }
+      qrBuffer = Buffer.from(response.data.qrCode.split(',')[1], 'base64');
+    } else {
+      throw new Error('Invalid gateway');
+    }
+    
+    const sentMessage = await ctx.replyWithPhoto(
+      { source: qrBuffer },
+      {
+        caption: 
+          `💳 *ᴅᴇᴘᴏꜱɪᴛ ꜱᴀʟᴅᴏ*\n\n` +
+          `${gatewayIcon} *${gatewayName}*\n\n` +
+          `💰 ᴊᴜᴍʟᴀʜ: Rp ${amount.toLocaleString('id-ID')}\n` +
+          `🔢 ᴋᴏᴅᴇ ᴜɴɪᴋ: +Rp ${uniqueCode}\n` +
+          `💳 *ᴛᴏᴛᴀʟ ʙᴀʏᴀʀ: Rp ${totalWithCode.toLocaleString('id-ID')}*\n\n` +
+          `✨ QRIS ᴅɪɴᴀᴍɪꜱ - ɴᴏᴍɪɴᴀʟ ᴏᴛᴏᴍᴀᴛɪꜱ ᴛᴇʀɪꜱɪ!\n` +
+          `⏰ ᴍᴇɴᴜɴɢɢᴜ ᴘᴇᴍʙᴀʏᴀʀᴀɴ...\n\n` +
+          `_Scan QR code di atas untuk bayar_`,
+        parse_mode: 'Markdown',
+        reply_markup: Markup.keyboard([
+          [Markup.button.text('🔙 Kembali ke Menu')],
+          [Markup.button.text('📖 Cara Order'), Markup.button.text('👤 Admin')],
+          [Markup.button.text('📦 All Stock')]
+        ]).resize().reply_markup
+      }
+    );
+    
+    const depositData = {
+      userId: ctx.from.id,
+      type: 'deposit',
+      amount: amount,
+      uniqueCode: uniqueCode,
+      total: totalWithCode,
+      createdAt: new Date().toISOString(),
+      messageToDelete: sentMessage.message_id
+    };
+    
+    // Add to appropriate gateway API
+    if (gateway === 'nobu') {
+      qrisAPI.addPendingPayment(depositId, depositData);
+    } else if (gateway === 'dana') {
+      danaAPI.addPendingPayment(depositId, depositData);
+    }
+    
+    console.log(`💳 Deposit Payment created: ${depositId}`);
+    console.log(`   Gateway: ${gateway}`);
+    console.log(`   User: ${ctx.from.id}`);
+    console.log(`   Amount: Rp ${amount.toLocaleString('id-ID')}`);
+    console.log(`   Total: Rp ${totalWithCode.toLocaleString('id-ID')}`);
+    
+    delete depositState[ctx.from.id];
+    
+  } catch (error) {
+    console.error('Error generating deposit QRIS:', error);
+    await ctx.reply(
+      `❌ *ɢᴀɢᴀʟ ɢᴇɴᴇʀᴀᴛᴇ QRIS*\n\n⚠️ ${error.message}\n\nSilakan coba lagi atau hubungi admin.`,
+      { parse_mode: 'Markdown' }
+    );
+    delete depositState[ctx.from.id];
+  }
+};
+
 const findProduct = (productId) => {
   const categories = getAllCategories();
   for (const cat of categories) {
@@ -160,6 +278,7 @@ const showProductMessage = async (ctx, productId, qty, isEdit = true) => {
   if (!product) return ctx.answerCbQuery('Produk tidak ditemukan');
   
   const stockCount = product.code ? getStockCount(product.code) : 0;
+  const soldCount = product.code ? getSoldCount(product.code) : 0;
   
   // Check special price
   const { getSpecialPrice } = require('./database/specialprices');
@@ -167,7 +286,7 @@ const showProductMessage = async (ctx, productId, qty, isEdit = true) => {
   const pricePerItem = specialPrice || product.price;
   let total = pricePerItem * qty;
   
-  let message = `🛒 ${product.name}\n🔖 Code: ${product.code || '-'}\n📊 Stok: ${stockCount}\n\n💰 Harga Satuan: Rp ${pricePerItem.toLocaleString('id-ID')}`;
+  let message = `🛒 ${product.name}\n🔖 Code: ${product.code || '-'}\n📊 Stok: ${stockCount}${soldCount > 0 ? `\n🔥 Terjual: ${soldCount.toLocaleString('id-ID')}` : ''}\n\n💰 Harga Satuan: Rp ${pricePerItem.toLocaleString('id-ID')}`;
   if (specialPrice) {
     message += ` (Normal: Rp ${product.price.toLocaleString('id-ID')})`;
   }
@@ -223,6 +342,9 @@ bot.command('setprice', isAdmin, setPriceHandler);
 bot.command('laporan', isAdmin, laporanHandler);
 bot.command('autobackup', isAdmin, autobackupHandler);
 bot.command('listusr', isAdmin, listUsrHandler);
+bot.command('activity', isAdmin, activityHandler);
+bot.command('editviewstok', isAdmin, editViewStokHandler);
+bot.command('pg', isAdmin, paymentGatewayHandler);
 bot.command('listuser', isAdmin, (ctx) => {
   const { getAllUsers } = require('./database/users');
   const users = getAllUsers();
@@ -235,7 +357,8 @@ bot.action(/^cat_(\d+)$/, async (ctx) => {
   const category = categories.find(cat => cat.id === categoryId);
   
   if (category) {
-    await ctx.answerCbQuery();
+    await safeAnswerCallback(ctx);
+    trackActivity(ctx.from.id, ctx.from.username || ctx.from.first_name, 'view_category', { categoryName: category.name });
     const products = getProductsByCategory(category.name);
     
     if (products.length > 0) {
@@ -265,47 +388,55 @@ bot.action(/^cat_(\d+)$/, async (ctx) => {
         Markup.inlineKeyboard([[Markup.button.callback('🔙 Kembali', 'back_home')]]));
     }
   } else {
-    ctx.answerCbQuery('Kategori tidak ditemukan');
+    await safeAnswerCallback(ctx, 'Kategori tidak ditemukan');
   }
 });
 
 bot.action(/^prod_(.+)_(\d+)$/, async (ctx) => {
-  await ctx.answerCbQuery();
-  await showProductMessage(ctx, parseFloat(ctx.match[1]), parseInt(ctx.match[2]));
+  await safeAnswerCallback(ctx);
+  const productId = parseFloat(ctx.match[1]);
+  const product = findProduct(productId);
+  if (product) {
+    trackActivity(ctx.from.id, ctx.from.username || ctx.from.first_name, 'view_product', { productName: product.name, productCode: product.code });
+  }
+  await showProductMessage(ctx, productId, parseInt(ctx.match[2]));
 });
 
 bot.action(/^prod_(.+)$/, async (ctx) => {
   const productId = parseFloat(ctx.match[1]);
   ctx.editMessageCaption = ctx.editMessageCaption;
-  await ctx.answerCbQuery();
+  await safeAnswerCallback(ctx);
   const newCallback = `prod_${productId}_1`;
   ctx.match = newCallback.match(/^prod_(.+)_(\d+)$/);
   return bot.handleUpdate({...ctx.update, callback_query: {...ctx.callbackQuery, data: newCallback}});
 });
 
 bot.action(/^qty_plus_(.+)_(\d+)$/, async (ctx) => {
-  await ctx.answerCbQuery();
+  await safeAnswerCallback(ctx);
+  trackActivity(ctx.from.id, ctx.from.username || ctx.from.first_name, 'adjust_qty', { action: 'increase' });
   await showProductMessage(ctx, parseFloat(ctx.match[1]), parseInt(ctx.match[2]) + 1);
 });
 
 bot.action(/^qty_min_(.+)_(\d+)$/, async (ctx) => {
-  await ctx.answerCbQuery();
+  await safeAnswerCallback(ctx);
+  trackActivity(ctx.from.id, ctx.from.username || ctx.from.first_name, 'adjust_qty', { action: 'decrease' });
   const qty = Math.max(1, parseInt(ctx.match[2]) - 1);
   await showProductMessage(ctx, parseFloat(ctx.match[1]), qty);
 });
 
 bot.action(/^qty_edit_(.+)_(\d+)$/, async (ctx) => {
   const productId = parseFloat(ctx.match[1]);
-  await ctx.answerCbQuery('Kirim jumlah yang diinginkan (angka saja)');
+  await safeAnswerCallback(ctx, 'Kirim jumlah yang diinginkan (angka saja)');
   editQtyState[ctx.from.id] = { productId: productId };
 });
 
 bot.action(/^qty_(?!min_|plus_|edit_)(.+)_(\d+)$/, async (ctx) => {
-  await ctx.answerCbQuery();
+  await safeAnswerCallback(ctx);
 });
 
 // Deposit keyboard handler
 bot.hears('💳 Deposit Saldo', async (ctx) => {
+  trackActivity(ctx.from.id, ctx.from.username || ctx.from.first_name, 'view_deposit');
   // Find the last message with photo to edit
   const message = 
     `💳 *ᴅᴇᴘᴏꜱɪᴛ ꜱᴀʟᴅᴏ*\n\n` +
@@ -335,6 +466,7 @@ bot.hears('💳 Deposit Saldo', async (ctx) => {
 
 // Cara Order handler
 bot.hears('📖 Cara Order', async (ctx) => {
+  trackActivity(ctx.from.id, ctx.from.username || ctx.from.first_name, 'view_cara_order');
   const message = 
     `📖 *ᴄᴀʀᴀ ᴏʀᴅᴇʀ*\n\n` +
     `*1️⃣ ᴘɪʟɪʜ ᴋᴀᴛᴇɢᴏʀɪ*\n` +
@@ -379,6 +511,7 @@ bot.hears('📖 Cara Order', async (ctx) => {
 
 // Admin contact handler
 bot.hears('👤 Admin', async (ctx) => {
+  trackActivity(ctx.from.id, ctx.from.username || ctx.from.first_name, 'view_admin_contact');
   const message = 
     `👤 *ʜᴜʙᴜɴɢɪ ᴀᴅᴍɪɴ*\n\n` +
     `💬 Butuh bantuan? Silakan chat langsung ke admin kami:\n\n` +
@@ -403,6 +536,7 @@ bot.hears('👤 Admin', async (ctx) => {
 
 // All Stock handler
 bot.hears('📦 All Stock', async (ctx) => {
+  trackActivity(ctx.from.id, ctx.from.username || ctx.from.first_name, 'view_stock');
   const { getAllProducts } = require('./database/products');
   const { getStockCount } = require('./database/stocks');
   
@@ -550,64 +684,38 @@ bot.on('text', async (ctx, next) => {
       return ctx.reply('❌ Jumlah deposit minimal Rp 1.000 dan harus berupa angka!');
     }
     
-    delete depositState[ctx.from.id];
+    // Get enabled gateways
+    const { getEnabledGateways } = require('./database/paymentgateway');
+    const enabledGateways = getEnabledGateways();
     
-    // Generate QRIS for deposit
-    const uniqueCode = Math.floor(Math.random() * 401) + 100;
-    const totalWithCode = amount + uniqueCode;
-    
-    try {
-      const depositId = `DEPOSIT-${ctx.from.id}-${Date.now()}`;
-      
-      // Generate dynamic QRIS with exact amount
-      const qrBuffer = await generateDynamicQRIS(totalWithCode, depositId);
-      
-      const sentMessage = await ctx.replyWithPhoto(
-        { source: qrBuffer },
-        {
-          caption: 
-            `💳 *ᴅᴇᴘᴏꜱɪᴛ ꜱᴀʟᴅᴏ*\n\n` +
-            `💰 ᴊᴜᴍʟᴀʜ: Rp ${amount.toLocaleString('id-ID')}\n` +
-            `🔢 ᴋᴏᴅᴇ ᴜɴɪᴋ: +Rp ${uniqueCode}\n` +
-            `💳 *ᴛᴏᴛᴀʟ ʙᴀʏᴀʀ: Rp ${totalWithCode.toLocaleString('id-ID')}*\n\n` +
-            `✨ QRIS ᴅɪɴᴀᴍɪꜱ - ɴᴏᴍɪɴᴀʟ ᴏᴛᴏᴍᴀᴛɪꜱ ᴛᴇʀɪꜱɪ!\n` +
-            `⏰ ᴍᴇɴᴜɴɢɢᴜ ᴘᴇᴍʙᴀʏᴀʀᴀɴ...\n\n` +
-            `_Scan QR code di atas untuk bayar_`,
-          parse_mode: 'Markdown',
-          reply_markup: Markup.keyboard([
-            [Markup.button.text('🔙 Kembali ke Menu')],
-            [Markup.button.text('📖 Cara Order'), Markup.button.text('👤 Admin')],
-            [Markup.button.text('📦 All Stock')]
-          ]).resize().reply_markup
-        }
-      );
-      
-      const depositData = {
-        userId: ctx.from.id,
-        type: 'deposit', // Mark as deposit
-        amount: amount,
-        uniqueCode: uniqueCode,
-        total: totalWithCode,
-        createdAt: new Date().toISOString(),
-        messageToDelete: sentMessage.message_id
-      };
-      
-      qrisAPI.addPendingPayment(depositId, depositData);
-      
-      console.log(`💳 Deposit Payment created: ${depositId}`);
-      console.log(`   User: ${ctx.from.id}`);
-      console.log(`   Amount: Rp ${amount.toLocaleString('id-ID')}`);
-      console.log(`   Total: Rp ${totalWithCode.toLocaleString('id-ID')}`);
-      
-    } catch (error) {
-      console.error('Error generating deposit QRIS:', error);
-      await ctx.reply(
-        `❌ *ɢᴀɢᴀʟ ɢᴇɴᴇʀᴀᴛᴇ QRIS*\n\n⚠️ ${error.message}\n\nSilakan coba lagi atau hubungi admin.`,
-        { parse_mode: 'Markdown' }
-      );
+    if (enabledGateways.length === 0) {
+      delete depositState[ctx.from.id];
+      return ctx.reply('❌ Tidak ada payment gateway yang tersedia. Hubungi admin.');
     }
     
-    return;
+    // If only one gateway, use it directly
+    if (enabledGateways.length === 1) {
+      depositState[ctx.from.id] = { amount, gateway: enabledGateways[0].code };
+      return handleDepositGateway(ctx, amount, enabledGateways[0].code);
+    }
+    
+    // Show gateway selection
+    depositState[ctx.from.id] = { amount, waitingGateway: true };
+    
+    const buttons = enabledGateways.map(gw => 
+      [Markup.button.callback(`${gw.icon} ${gw.name}`, `deposit_gw_${gw.code}`)]
+    );
+    buttons.push([Markup.button.callback('❌ Batal', 'deposit_cancel')]);
+    
+    return ctx.reply(
+      `💳 *PILIH PAYMENT GATEWAY*\n\n` +
+      `💰 Jumlah: Rp ${amount.toLocaleString('id-ID')}\n\n` +
+      `Pilih metode pembayaran:`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: Markup.inlineKeyboard(buttons).reply_markup
+      }
+    );
   }
   
   // Handle edit qty
@@ -630,7 +738,7 @@ bot.action(/^cat_back_(.+)$/, async (ctx) => {
   
   if (category) {
     const products = getProductsByCategory(category.name);
-    await ctx.answerCbQuery();
+    await safeAnswerCallback(ctx);
     
     if (products.length > 0) {
       let message = `📦 Kategori: ${category.name}\n\n`;
@@ -659,12 +767,12 @@ bot.action(/^cat_back_(.+)$/, async (ctx) => {
         Markup.inlineKeyboard([[Markup.button.callback('🔙 Kembali', 'back_home')]]));
     }
   } else {
-    await ctx.answerCbQuery('Kategori tidak ditemukan');
+    await safeAnswerCallback(ctx, 'Kategori tidak ditemukan');
   }
 });
 
 bot.action('back_home', async (ctx) => {
-  await ctx.answerCbQuery();
+  await safeAnswerCallback(ctx);
   
   const quotes = [
     "Sukses dimulai dari langkah pertama yang berani.",
@@ -745,8 +853,7 @@ bot.action('back_home', async (ctx) => {
 
 // Pagination navigation handler
 bot.action(/^page_(\d+)$/, async (ctx) => {
-  const page = parseInt(ctx.match[1]);
-  await ctx.answerCbQuery();
+  await safeAnswerCallback(ctx);
   
   const quotes = [
     "Sukses dimulai dari langkah pertama yang berani.",
@@ -818,7 +925,28 @@ bot.action(/^page_(\d+)$/, async (ctx) => {
 
 // Dummy handler for page info button
 bot.action('page_info', async (ctx) => {
-  await ctx.answerCbQuery('Info halaman');
+  await safeAnswerCallback(ctx, 'Info halaman');
+});
+
+// Deposit gateway selection handlers
+bot.action(/^deposit_gw_(.+)$/, async (ctx) => {
+  const gateway = ctx.match[1];
+  await safeAnswerCallback(ctx);
+  
+  if (!depositState[ctx.from.id]?.amount) {
+    return ctx.reply('❌ Session expired. Silakan /start lagi.');
+  }
+  
+  const amount = depositState[ctx.from.id].amount;
+  await ctx.deleteMessage().catch(() => {});
+  await handleDepositGateway(ctx, amount, gateway);
+});
+
+bot.action('deposit_cancel', async (ctx) => {
+  await safeAnswerCallback(ctx, 'Deposit dibatalkan');
+  delete depositState[ctx.from.id];
+  await ctx.deleteMessage().catch(() => {});
+  ctx.reply('❌ Deposit dibatalkan.');
 });
 
 // Handlers for /listusr pagination
@@ -828,7 +956,7 @@ bot.action('listusr_page_info', listUsrPageInfoHandler);
 bot.action(/^pay_saldo_(.+)_(\d+)$/, async (ctx) => {
   const productId = parseFloat(ctx.match[1]);
   const qty = parseInt(ctx.match[2]);
-  await ctx.answerCbQuery();
+  await safeAnswerCallback(ctx);
   const product = findProduct(productId);
   
   if (product) {
@@ -892,6 +1020,14 @@ bot.action(/^pay_saldo_(.+)_(\d+)$/, async (ctx) => {
     const { addTransaction } = require('./database/transactions');
     addTransaction(ctx.from.id, ctx.from.username || ctx.from.first_name, 'saldo', product.name, qty, total);
     
+    // Track activity
+    trackActivity(ctx.from.id, ctx.from.username || ctx.from.first_name, 'purchase_saldo', { productName: product.name, quantity: qty, amount: total });
+    
+    // Increment sold count
+    if (product.code) {
+      incrementSold(product.code, qty);
+    }
+    
     let accountDetails = '';
     stocks.forEach((stock, index) => {
       accountDetails += `\n${index + 1}. ${stock.detail}`;
@@ -939,7 +1075,7 @@ bot.action(/^pay_saldo_(.+)_(\d+)$/, async (ctx) => {
 bot.action(/^pay_qris_(.+)_(\d+)$/, async (ctx) => {
   const productId = parseFloat(ctx.match[1]);
   const qty = parseInt(ctx.match[2]);
-  await ctx.answerCbQuery();
+  await safeAnswerCallback(ctx);
   const product = findProduct(productId);
   
   if (product) {
@@ -971,15 +1107,49 @@ bot.action(/^pay_qris_(.+)_(\d+)$/, async (ctx) => {
     const uniqueCode = Math.floor(Math.random() * 401) + 100;
     const totalWithCode = total + uniqueCode;
     
+    // Get enabled gateway
+    const { getEnabledGateways } = require('./database/paymentgateway');
+    const enabledGateways = getEnabledGateways();
+    
+    if (enabledGateways.length === 0) {
+      return await safeEditMessage(
+        ctx,
+        `❌ Tidak ada payment gateway yang tersedia.\n\nHubungi admin.`,
+        Markup.inlineKeyboard([[Markup.button.callback('🔙 Kembali', `prod_${product.id}_${qty}`)]])
+      );
+    }
+    
+    const gateway = enabledGateways[0]; // Use first enabled gateway
+    
     try {
-      const paymentId = `QRIS-${ctx.from.id}-${Date.now()}`;
+      const paymentId = `${gateway.code.toUpperCase()}-${ctx.from.id}-${Date.now()}`;
+      let qrBuffer;
       
-      // Generate dynamic QRIS with exact amount
-      const qrBuffer = await generateDynamicQRIS(totalWithCode, paymentId);
+      // Generate QRIS based on active gateway
+      if (gateway.code === 'nobu') {
+        qrBuffer = await generateDynamicQRIS(totalWithCode, paymentId);
+      } else if (gateway.code === 'dana') {
+        const data = {
+          qrisCode: danaQrisCode,
+          nominal: totalWithCode.toString(),
+          feeType: 'r',
+          fee: '0',
+          includeFee: false
+        };
+        const response = await axios.post(
+          'https://qris-statis-to-dinamis.vercel.app/generate-qris',
+          data,
+          { headers: { 'Content-Type': 'application/json' }, timeout: 15000 }
+        );
+        if (!response.data?.qrCode) {
+          throw new Error('Failed to generate DANA QRIS');
+        }
+        qrBuffer = Buffer.from(response.data.qrCode.split(',')[1], 'base64');
+      }
       
       await ctx.deleteMessage();
       
-      let caption = `📱 *ᴘᴇᴍʙᴀʏᴀʀᴀɴ QRIS*\n\n📦 ᴘʀᴏᴅᴜᴋ: ${product.name}\n📦 ᴊᴜᴍʟᴀʜ: ${qty}`;
+      let caption = `📱 *ᴘᴇᴍʙᴀʏᴀʀᴀɴ QRIS*\n\n${gateway.icon} *${gateway.name}*\n\n📦 ᴘʀᴏᴅᴜᴋ: ${product.name}\n📦 ᴊᴜᴍʟᴀʜ: ${qty}`;
       if (specialPrice) {
         caption += `\n💰 ʜᴀʀɢᴀ: Rp ${pricePerItem.toLocaleString('id-ID')}/item (Harga Bulk)`;
       }
@@ -1011,9 +1181,18 @@ bot.action(/^pay_qris_(.+)_(\d+)$/, async (ctx) => {
         messageToDelete: sentMessage.message_id
       };
       
-      qrisAPI.addPendingPayment(paymentId, paymentData);
+      // Add to appropriate gateway API
+      if (gateway.code === 'nobu') {
+        qrisAPI.addPendingPayment(paymentId, paymentData);
+      } else if (gateway.code === 'dana') {
+        danaAPI.addPendingPayment(paymentId, paymentData);
+      }
+      
+      // Track activity
+      trackActivity(ctx.from.id, ctx.from.username || ctx.from.first_name, 'purchase_qris', { productName: product.name, quantity: qty, amount: totalWithCode });
       
       console.log(`💳 QRIS Payment created: ${paymentId}`);
+      console.log(`   Gateway: ${gateway.name}`);
       console.log(`   Product: ${product.name} (Code: ${product.code})`);
       console.log(`   Quantity: ${qty}`);
       console.log(`   Total: Rp ${totalWithCode.toLocaleString('id-ID')}`);
@@ -1079,11 +1258,18 @@ bot.command('help', (ctx) => {
     helpMessage += '`/diskon` `@username persen`\n';
     helpMessage += '  ↳ Set diskon member (contoh: /diskon @user 10)\n';
     helpMessage += '`/setprice` `code minqty harga`\n';
-    helpMessage += '  ↳ Set harga khusus bulk (contoh: /setprice NF1 10 2000)\n\n';
+    helpMessage += '  ↳ Set harga khusus bulk (contoh: /setprice NF1 10 2000)\n';
+    helpMessage += '`/editviewstok` `code jumlah`\n';
+    helpMessage += '  ↳ Set tampilan "Terjual" di produk (social proof)\n';
+    helpMessage += '`/pg` - Lihat payment gateway settings\n';
+    helpMessage += '`/pg` `on/off code` - Toggle gateway (nobu/dana)\n\n';
     
     helpMessage += '📊 *ʟᴀᴘᴏʀᴀɴ:*\n';
     helpMessage += '`/laporan`\n';
     helpMessage += '  ↳ Lihat laporan keuangan & statistik\n';
+    helpMessage += '`/activity` - Lihat statistik aktivitas global\n';
+    helpMessage += '`/activity` `@username` - Lihat aktivitas user\n';
+    helpMessage += '  ↳ Track aktivitas user (view, purchase, dll)\n';
     helpMessage += '`/autobackup` `on/off angka menit/jam/hari`\n';
     helpMessage += '  ↳ Set auto backup database\n\n';
     
@@ -1095,22 +1281,35 @@ bot.command('help', (ctx) => {
 });
 
 qrisAPI.setupEndpoint(app, bot);
+danaAPI.setupEndpoint(app, bot);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🌐 Express server running on port ${PORT}`);
-  console.log(`📡 Webhook endpoint: http://localhost:${PORT}/api/qris-callback`);
+  console.log(`📡 QRIS Callback: http://localhost:${PORT}/api/qris-callback`);
+  console.log(`⚡ DANA Callback: http://localhost:${PORT}/api/dana-callback`);
 });
 
 bot.launch();
 
 console.log('🤖 Bot berhasil dijalankan!');
 
-// Auto Backup System
-const fs = require('fs');
-const path = require('path');
-const archiver = require('archiver');
+// Global error handler
+bot.catch((err, ctx) => {
+  console.error('❌ Bot error:', err);
+  console.error('   Update:', JSON.stringify(ctx.update, null, 2));
+  
+  // Try to notify user about error (without crashing)
+  try {
+    if (ctx?.chat?.id) {
+      ctx.reply('⚠️ Terjadi kesalahan. Silakan coba lagi atau hubungi admin.').catch(() => {});
+    }
+  } catch (e) {
+    console.error('   Failed to send error message to user');
+  }
+});
 
+// Auto Backup System
 let backupInterval = null;
 
 const sendBackup = async () => {

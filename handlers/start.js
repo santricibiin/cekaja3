@@ -73,9 +73,12 @@ const startHandler = async (ctx) => {
     message += `/gantifoto <url>\n`;
     message += `/bonus on/off code - Set bonus produk\n`;
     message += `/diskon @username persen - Set diskon member\n`;
-    message += `/setprice code minqty harga - Set harga bulk\n\n`;
-    message += `📊 *ʟᴀᴘᴏʀᴀɴ:*\n`;
+    message += `/setprice code minqty harga - Set harga bulk\n`;
+    message += `/editviewstok code jumlah - Set tampilan terjual\n`;
+    message += `/pg on/off code - Toggle payment gateway\n\n`;
+    message += `📊 *ʟᴀᴘᴏʀᴀɴ & ᴀɴᴀʟʏᴛɪᴄꜱ:*\n`;
     message += `/laporan - Laporan keuangan\n`;
+    message += `/activity - Statistik aktivitas user\n`;
     message += `/autobackup - Set auto backup database\n\n`;
     message += `ℹ️ *ʟᴀɪɴɴʏᴀ:*\n`;
     message += `/saldo - Cek saldo\n`;

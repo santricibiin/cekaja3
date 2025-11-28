@@ -9,6 +9,26 @@
       "qty": 1,
       "total": 2700,
       "createdAt": "2025-11-27T16:42:59.492Z"
+    },
+    {
+      "id": 1764340402156,
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "type": "saldo",
+      "productName": "CANVA PRO HEAD",
+      "qty": 1,
+      "total": 2700,
+      "createdAt": "2025-11-28T14:33:22.156Z"
+    },
+    {
+      "id": 1764343893032,
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "type": "dana",
+      "productName": "CANVA PRO HEAD",
+      "qty": 1,
+      "total": 242,
+      "createdAt": "2025-11-28T15:31:33.032Z"
     }
   ]
 }

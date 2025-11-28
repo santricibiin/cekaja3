@@ -1,0 +1,522 @@
+{
+  "activities": [
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-28T14:19:08.827Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T14:19:51.533Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "adjust_qty",
+      "details": {
+        "action": "increase"
+      },
+      "timestamp": "2025-11-28T14:19:56.393Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-28T14:31:51.683Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T14:32:03.637Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "adjust_qty",
+      "details": {
+        "action": "increase"
+      },
+      "timestamp": "2025-11-28T14:33:15.790Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "adjust_qty",
+      "details": {
+        "action": "increase"
+      },
+      "timestamp": "2025-11-28T14:33:18.850Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "adjust_qty",
+      "details": {
+        "action": "decrease"
+      },
+      "timestamp": "2025-11-28T14:33:19.077Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "adjust_qty",
+      "details": {
+        "action": "increase"
+      },
+      "timestamp": "2025-11-28T14:33:21.821Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "purchase_saldo",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "quantity": 1,
+        "amount": 2700
+      },
+      "timestamp": "2025-11-28T14:33:22.156Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "adjust_qty",
+      "details": {
+        "action": "decrease"
+      },
+      "timestamp": "2025-11-28T14:33:22.162Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "adjust_qty",
+      "details": {
+        "action": "increase"
+      },
+      "timestamp": "2025-11-28T14:33:25.883Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "adjust_qty",
+      "details": {
+        "action": "increase"
+      },
+      "timestamp": "2025-11-28T14:33:28.521Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "adjust_qty",
+      "details": {
+        "action": "decrease"
+      },
+      "timestamp": "2025-11-28T14:33:28.849Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T14:35:55.307Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T14:53:49.346Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T14:53:53.397Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-28T14:54:10.373Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T14:54:12.466Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "purchase_qris",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "quantity": 1,
+        "amount": 339
+      },
+      "timestamp": "2025-11-28T14:54:16.197Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-28T14:55:07.056Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T14:55:08.964Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "purchase_qris",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "quantity": 1,
+        "amount": 150
+      },
+      "timestamp": "2025-11-28T14:55:12.009Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_admin_contact",
+      "details": null,
+      "timestamp": "2025-11-28T15:15:34.150Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-28T15:15:37.731Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T15:15:39.727Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "purchase_qris",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "quantity": 1,
+        "amount": 133
+      },
+      "timestamp": "2025-11-28T15:15:43.249Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_deposit",
+      "details": null,
+      "timestamp": "2025-11-28T15:16:15.934Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_deposit",
+      "details": null,
+      "timestamp": "2025-11-28T15:27:18.074Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_deposit",
+      "details": null,
+      "timestamp": "2025-11-28T15:29:57.279Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-28T15:30:57.889Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T15:31:02.928Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "purchase_qris",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "quantity": 1,
+        "amount": 242
+      },
+      "timestamp": "2025-11-28T15:31:08.213Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_admin_contact",
+      "details": null,
+      "timestamp": "2025-11-28T15:36:37.652Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_admin_contact",
+      "details": null,
+      "timestamp": "2025-11-28T15:36:40.297Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_admin_contact",
+      "details": null,
+      "timestamp": "2025-11-28T15:36:43.361Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_admin_contact",
+      "details": null,
+      "timestamp": "2025-11-28T15:36:46.250Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_admin_contact",
+      "details": null,
+      "timestamp": "2025-11-28T15:36:49.331Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-28T15:36:49.805Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_admin_contact",
+      "details": null,
+      "timestamp": "2025-11-28T15:36:52.414Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-28T15:36:52.803Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_admin_contact",
+      "details": null,
+      "timestamp": "2025-11-28T15:36:56.331Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-28T15:36:56.804Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_admin_contact",
+      "details": null,
+      "timestamp": "2025-11-28T15:37:00.388Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-28T15:37:00.884Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-28T15:37:01.159Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-28T15:37:16.511Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T15:37:20.444Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T15:37:23.743Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T15:37:28.087Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T15:37:32.289Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T15:37:36.276Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T15:37:40.783Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T15:37:51.437Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-28T15:37:57.540Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-28T15:37:59.554Z"
+    },
+    {
+      "userId": 6501087981,
+      "username": "csfastcell",
+      "action": "purchase_qris",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "quantity": 1,
+        "amount": 223
+      },
+      "timestamp": "2025-11-28T15:38:02.757Z"
+    }
+  ]
+}

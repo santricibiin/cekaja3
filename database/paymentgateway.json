@@ -1,0 +1,12 @@
+{
+  "nobu": {
+    "enabled": true,
+    "name": "Nobu Bank",
+    "icon": "🏦"
+  },
+  "dana": {
+    "enabled": false,
+    "name": "DANA QRIS",
+    "icon": "⚡"
+  }
+}

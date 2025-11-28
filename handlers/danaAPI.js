@@ -1,24 +1,22 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
 
-class QrisAPI {
+class DanaAPI {
     constructor() {
         this.pendingPayments = new Map();
     }
 
     setupEndpoint(app, bot) {
-        app.get('/api/qris-callback', (req, res) => {
+        app.get('/api/dana-callback', (req, res) => {
             res.status(200).json({ 
                 status: 'ok',
-                message: 'QRIS callback endpoint is running',
+                message: 'DANA callback endpoint is running',
                 pendingPayments: this.pendingPayments.size
             });
         });
 
-        app.post('/api/qris-callback', express.json(), express.urlencoded({ extended: true }), async (req, res) => {
+        app.post('/api/dana-callback', express.json(), express.urlencoded({ extended: true }), async (req, res) => {
             try {
-                console.log('\n==================== QRIS CALLBACK ====================');
+                console.log('\n==================== DANA CALLBACK ====================');
                 console.log('📥 Request received at:', new Date().toISOString());
                 console.log('📦 Body:', JSON.stringify(req.body, null, 2));
                 
@@ -31,11 +29,9 @@ class QrisAPI {
                 }
 
                 const formattedNotification = {
-                    name: notification.name || '',
                     pkg: notification.pkg || '',
                     title: notification.title || '',
-                    text: notification.text || '',
-                    subtext: notification.subtext || ''
+                    text: notification.text || ''
                 };
                 
                 console.log('📱 Formatted notification:');
@@ -43,21 +39,23 @@ class QrisAPI {
                 console.log('   - Title:', formattedNotification.title);
                 console.log('   - Text:', formattedNotification.text);
                 
-                // Check if it's Nobu Bank notification by package OR text pattern
-                const isNobuPackage = formattedNotification.pkg === 'com.bnc.finance';
-                const isNobuText = formattedNotification.text?.includes('Pembayaran QRIS diterima') || 
-                                   formattedNotification.text?.includes('akan dikreditkan ke Tabungan');
+                // Check if it's DANA notification
+                const isDanaPackage = formattedNotification.pkg === 'id.dana';
+                const isDanaText = formattedNotification.text?.includes('menerima Rp') || 
+                                   formattedNotification.text?.includes('via Gopay');
                 
-                if (!isNobuPackage && !isNobuText) {
-                    console.log('⚠️  Not Nobu Bank notification, ignored');
+                if (!isDanaPackage && !isDanaText) {
+                    console.log('⚠️  Not DANA notification, ignored');
                     console.log('======================================================\n');
-                    return res.json({ success: true, message: 'Not a Nobu notification, ignored' });
+                    return res.json({ success: true, message: 'Not a DANA notification, ignored' });
                 }
                 
-                console.log('✅ Nobu notification confirmed (pkg:', isNobuPackage, 'text:', isNobuText, ')');
+                console.log('✅ DANA notification confirmed (pkg:', isDanaPackage, 'text:', isDanaText, ')');
 
-                // Improved regex to handle various formats: Rp1234, Rp1.234, Rp1,234
-                const amountMatch = formattedNotification.text?.match(/Rp([\d.,]+)\s+akan\s+dikreditkan/i);
+                // Parse amount from DANA notification format
+                // Format: "Kamu berhasil menerima Rp[amount] via Gopay ke akunmu"
+                // Amount can have separators: Rp1.336 or Rp1,336 or Rp1336
+                const amountMatch = formattedNotification.text?.match(/menerima Rp([\d.,]+)/);
                 if (!amountMatch) {
                     console.log('❌ Amount not found in text');
                     console.log('   Full text:', formattedNotification.text);
@@ -77,10 +75,7 @@ class QrisAPI {
                 for (const [paymentId, payment] of this.pendingPayments.entries()) {
                     console.log(`\n   Payment: ${paymentId}`);
                     console.log(`     User ID: ${payment.userId}`);
-                    console.log(`     Product: ${payment.productName}`);
-                    console.log(`     Quantity: ${payment.quantity}`);
-                    console.log(`     Subtotal: ${payment.subtotal}`);
-                    console.log(`     Unique Code: ${payment.uniqueCode}`);
+                    console.log(`     Type: ${payment.type || 'product'}`);
                     console.log(`     Total: ${payment.total}`);
                     console.log(`     Match: ${payment.total === amount ? '✅ YES' : '❌ NO'}`);
                     
@@ -142,10 +137,10 @@ class QrisAPI {
                         await bot.telegram.sendMessage(
                             foundPayment.userId,
                             `✅ *ᴅᴇᴘᴏꜱɪᴛ ʙᴇʀʜᴀꜱɪʟ*\n\n` +
+                            `⚡ *DANA QRIS*\n\n` +
                             `💰 ᴊᴜᴍʟᴀʜ: Rp ${foundPayment.amount.toLocaleString('id-ID')}\n` +
                             `🔢 ᴋᴏᴅᴇ ᴜɴɪᴋ: +Rp ${foundPayment.uniqueCode}\n` +
-                            `💳 ᴛᴏᴛᴀʟ ʙᴀʏᴀʀ: Rp ${foundPayment.total.toLocaleString('id-ID')}\n` +
-                            `🏦 ᴍᴇᴛᴏᴅᴇ: QRIS (Nobu Bank)\n\n` +
+                            `💳 ᴛᴏᴛᴀʟ ʙᴀʏᴀʀ: Rp ${foundPayment.total.toLocaleString('id-ID')}\n\n` +
                             `💰 *ꜱᴀʟᴅᴏ ꜱᴇᴋᴀʀᴀɴɢ: Rp ${(user.balance + foundPayment.amount).toLocaleString('id-ID')}*\n\n` +
                             `🆔 ʀᴇꜰ: \`${foundPaymentId}\`\n` +
                             `📅 ᴡᴀᴋᴛᴜ: ${new Date().toLocaleString('id-ID')}\n\n` +
@@ -160,12 +155,12 @@ class QrisAPI {
                             }
                         );
                         
-                        console.log('✅ ᴅᴇᴘᴏꜱɪᴛ ʙᴇʀʜᴀꜱɪʟ -', user.username, '+Rp', foundPayment.amount.toLocaleString('id-ID'));
+                        console.log('✅ DEPOSIT BERHASIL -', user.username, '+Rp', foundPayment.amount.toLocaleString('id-ID'));
                         
                         // Notify admin
                         const { adminId } = require('../config/config');
                         try {
-                            await bot.telegram.sendMessage(adminId, `💳 Deposit Berhasil!\n\n👤 User: ${user.username}\n🆔 ID: ${foundPayment.userId}\n💰 Jumlah: Rp ${foundPayment.amount.toLocaleString('id-ID')}\n💳 Total Bayar: Rp ${foundPayment.total.toLocaleString('id-ID')}`);
+                            await bot.telegram.sendMessage(adminId, `⚡ Deposit DANA Berhasil!\n\n👤 User: ${user.username}\n🆔 ID: ${foundPayment.userId}\n💰 Jumlah: Rp ${foundPayment.amount.toLocaleString('id-ID')}\n💳 Total Bayar: Rp ${foundPayment.total.toLocaleString('id-ID')}`);
                         } catch (error) {}
                         
                         console.log('======================================================\n');
@@ -178,32 +173,24 @@ class QrisAPI {
                         });
                     }
                     
-                    // Process product purchase
-                    console.log('� Processing PRODUCT PURCHASE...');
+                    // Process product purchase (similar to deposit, for future use)
+                    console.log('📦 Processing PRODUCT PURCHASE...');
                     const { useStock } = require('../database/stocks');
+                    const { incrementSold } = require('../database/soldcount');
 
                     console.log('📦 Attempting to get stock for:', foundPayment.productCode, 'qty:', foundPayment.quantity);
                     const stocks = useStock(foundPayment.productCode, foundPayment.quantity);
                     
-                    console.log('📦 Stock result:', stocks);
-                    
                     if (!stocks || stocks.length === 0) {
-                        console.log('❌ Failed to get stock or stock is empty');
+                        console.log('❌ Failed to get stock');
                         await bot.telegram.sendMessage(
                             foundPayment.userId,
-                            `❌ *ᴘᴇᴍʙᴀʏᴀʀᴀɴ ᴅɪᴛᴇʀɪᴍᴀ*\n\n` +
-                            `⚠️ ꜱᴛᴏᴋ ᴛɪᴅᴀᴋ ᴛᴇʀꜱᴇᴅɪᴀ!\n\n` +
-                            `💰 ᴛᴏᴛᴀʟ: Rp ${foundPayment.total.toLocaleString('id-ID')}\n` +
-                            `📦 ᴘʀᴏᴅᴜᴋ: ${foundPayment.productName}\n\n` +
-                            `🙏 ʜᴜʙᴜɴɢɪ ᴀᴅᴍɪɴ ᴜɴᴛᴜᴋ ᴘᴇɴɢᴇᴍʙᴀʟɪᴀɴ ᴅᴀɴᴀ.\n` +
-                            `🆔 ʀᴇꜰ: \`${foundPaymentId}\``,
+                            `❌ *ᴘᴇᴍʙᴀʏᴀʀᴀɴ ᴅɪᴛᴇʀɪᴍᴀ*\n\n⚠️ ꜱᴛᴏᴋ ᴛɪᴅᴀᴋ ᴛᴇʀꜱᴇᴅɪᴀ!\n\n💰 ᴛᴏᴛᴀʟ: Rp ${foundPayment.total.toLocaleString('id-ID')}\n📦 ᴘʀᴏᴅᴜᴋ: ${foundPayment.productName}\n\n🙏 ʜᴜʙᴜɴɢɪ ᴀᴅᴍɪɴ ᴜɴᴛᴜᴋ ᴘᴇɴɢᴇᴍʙᴀʟɪᴀɴ ᴅᴀɴᴀ.\n🆔 ʀᴇꜰ: \`${foundPaymentId}\``,
                             { parse_mode: 'Markdown' }
                         );
                         console.log('======================================================\n');
                         return res.status(500).json({ success: false, message: 'Stock not available' });
                     }
-                    
-                    console.log('✅ Stock retrieved successfully, count:', stocks.length);
                     
                     // Check bonus
                     const { getBonus } = require('../database/bonus');
@@ -211,32 +198,22 @@ class QrisAPI {
                     let bonusStocks = [];
                     if (bonus && foundPayment.quantity >= bonus.minPurchase) {
                         bonusStocks = useStock(foundPayment.productCode, bonus.bonusAmount) || [];
-                        console.log('🎁 Bonus applied:', bonusStocks.length);
                     }
 
                     this.pendingPayments.delete(foundPaymentId);
-                    console.log('🗑️  Removed from pending payments');
                     
-                    // Track transaction
+                    // Track transaction & sold count
                     const { addTransaction } = require('../database/transactions');
-                    addTransaction(foundPayment.userId, user.username, 'qris', foundPayment.productName, foundPayment.quantity, foundPayment.total);
-
-                    // Increment sold count
-                    const { incrementSold } = require('../database/soldcount');
+                    addTransaction(foundPayment.userId, user.username, 'dana', foundPayment.productName, foundPayment.quantity, foundPayment.total);
+                    
                     if (foundPayment.productCode) {
                         incrementSold(foundPayment.productCode, foundPayment.quantity);
                     }
 
                     if (foundPayment.messageToDelete) {
                         try {
-                            await bot.telegram.deleteMessage(
-                                foundPayment.userId,
-                                foundPayment.messageToDelete
-                            );
-                            console.log('🗑️  QR message deleted');
-                        } catch (error) {
-                            console.log('⚠️  Could not delete QR message:', error.message);
-                        }
+                            await bot.telegram.deleteMessage(foundPayment.userId, foundPayment.messageToDelete);
+                        } catch (error) {}
                     }
 
                     let accountDetails = '';
@@ -250,99 +227,42 @@ class QrisAPI {
                             accountDetails += `\n${stocks.length + index + 1}. ${stock.detail}`;
                         });
                     }
-                    
-                    console.log('📝 Account details prepared:', accountDetails);
 
-                    let successMsg = `✅ *ᴘᴇᴍʙᴀʏᴀʀᴀɴ ʙᴇʀʜᴀꜱɪʟ*\n\n` +
+                    await bot.telegram.sendMessage(
+                        foundPayment.userId,
+                        `✅ *ᴘᴇᴍʙᴇʟɪᴀɴ ʙᴇʀʜᴀꜱɪʟ*\n\n` +
+                        `⚡ *DANA QRIS*\n\n` +
                         `📦 ᴘʀᴏᴅᴜᴋ: ${foundPayment.productName}\n` +
-                        `📦 ᴊᴜᴍʟᴀʜ: ${foundPayment.quantity}\n`;
-                    if (bonusStocks.length > 0) {
-                        successMsg += `🎁 ʙᴏɴᴜꜱ: ${bonusStocks.length}\n`;
-                    }
-                    successMsg += `💰 ꜱᴜʙᴛᴏᴛᴀʟ: Rp ${foundPayment.subtotal.toLocaleString('id-ID')}\n` +
-                        `🔢 ᴋᴏᴅᴇ ᴜɴɪᴋ: +Rp ${foundPayment.uniqueCode}\n` +
-                        `💳 ᴛᴏᴛᴀʟ ʙᴀʏᴀʀ: Rp ${foundPayment.total.toLocaleString('id-ID')}\n` +
-                        `🏦 ᴍᴇᴛᴏᴅᴇ: QRIS (Nobu Bank)\n\n` +
-                        `🆔 ʀᴇꜰ: \`${foundPaymentId}\`\n` +
-                        `📅 ᴡᴀᴋᴛᴜ: ${new Date().toLocaleString('id-ID')}\n\n` +
-                        `🎉 ᴛᴇʀɪᴍᴀ ᴋᴀꜱɪʜ!`;
-                    
-                    await bot.telegram.sendMessage(foundPayment.userId, successMsg, { parse_mode: 'Markdown' });
-                    console.log('✅ Confirmation message sent');
+                        `📦 ᴊᴜᴍʟᴀʜ: ${foundPayment.quantity}\n` +
+                        `💰 ᴛᴏᴛᴀʟ: Rp ${foundPayment.total.toLocaleString('id-ID')}\n\n` +
+                        `🎉 ᴛᴇʀɪᴍᴀ ᴋᴀꜱɪʜ!`,
+                        { parse_mode: 'Markdown' }
+                    );
 
-                    if (accountDetails && accountDetails.trim() !== '') {
-                        // Loading animation
-                        const loadMsg = await bot.telegram.sendMessage(foundPayment.userId, '😇');
-                        await new Promise(resolve => setTimeout(resolve, 800));
-                        await bot.telegram.deleteMessage(foundPayment.userId, loadMsg.message_id).catch(() => {});
-                        
-                        // Send details
-                        await bot.telegram.sendMessage(
-                            foundPayment.userId,
-                            `🎉 *ᴅᴇᴛᴀɪʟ ᴘʀᴏᴅᴜᴋ:*${accountDetails}\n\n⚠️ *ꜱɪᴍᴘᴀɴ ᴅᴀᴛᴀ ɪɴɪ ᴅᴇɴɢᴀɴ ʙᴀɪᴋ!*`,
-                            { parse_mode: 'Markdown' }
-                        );
-                        console.log('✅ Product details sent to user');
-                        
-                        // Send S&K if exists
-                        const { getProductByCode } = require('../database/products');
-                        const product = getProductByCode(foundPayment.productCode);
-                        if (product && product.snk) {
-                            await bot.telegram.sendMessage(
-                                foundPayment.userId,
-                                `⚠️ *Syarat & Ketentuan:*\n${product.snk}`,
-                                { parse_mode: 'Markdown' }
-                            );
-                            console.log('✅ S&K sent to user');
-                        }
-                    } else {
-                        console.log('⚠️  Account details empty, not sending');
-                    }
-                    
-                    console.log('✅ Success message sent to user');
-                    console.log('✅ ᴘᴇᴍʙᴀʏᴀʀᴀɴ ʙᴇʀʜᴀꜱɪʟ -', user.username, '+', foundPayment.productName, 'x', foundPayment.quantity);
-                    
-                    // Notify admin
-                    const { adminId } = require('../config/config');
-                    try {
-                        await bot.telegram.sendMessage(adminId, `💰 Pembelian Berhasil (QRIS)!\n\n👤 User: ${user.username}\n🆔 ID: ${foundPayment.userId}\n📦 Produk: ${foundPayment.productName}\n📦 Jumlah: ${foundPayment.quantity}\n💰 Total: Rp ${foundPayment.total.toLocaleString('id-ID')}`);
-                    } catch (error) {}
+                    await bot.telegram.sendMessage(
+                        foundPayment.userId,
+                        `🎉 Detail Akun:\n${accountDetails}\n\n⚠️ Simpan data ini dengan baik!`
+                    );
                     
                     console.log('======================================================\n');
+                    res.json({ success: true });
 
-                    return res.json({ success: true, message: 'Payment processed successfully' });
-                    
                 } catch (error) {
                     console.error('❌ Error processing payment:', error);
                     console.log('======================================================\n');
-                    return res.status(500).json({ success: false, message: error.message });
+                    res.status(500).json({ success: false, message: error.message });
                 }
-
+                
             } catch (error) {
-                console.error('❌ Fatal error:', error);
-                console.log('======================================================\n');
-                return res.status(500).json({ success: false, message: error.message });
+                console.error('❌ Callback error:', error);
+                res.status(500).json({ success: false });
             }
         });
     }
 
     addPendingPayment(paymentId, paymentData) {
         this.pendingPayments.set(paymentId, paymentData);
-        console.log('💳 Added pending payment:', paymentId);
-        console.log('   Total amount:', paymentData.total);
-    }
-
-    removePendingPayment(paymentId) {
-        return this.pendingPayments.delete(paymentId);
-    }
-
-    getPendingPayment(paymentId) {
-        return this.pendingPayments.get(paymentId);
-    }
-
-    getAllPendingPayments() {
-        return Array.from(this.pendingPayments.entries());
     }
 }
 
-module.exports = QrisAPI;
+module.exports = DanaAPI;
