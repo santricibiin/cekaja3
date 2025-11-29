@@ -1,11 +1,11 @@
 {
   "nobu": {
-    "enabled": true,
+    "enabled": false,
     "name": "Nobu Bank",
     "icon": "🏦"
   },
   "dana": {
-    "enabled": false,
+    "enabled": true,
     "name": "DANA QRIS",
     "icon": "⚡"
   }

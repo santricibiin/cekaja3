@@ -49,10 +49,9 @@ const safeAnswerCallback = async (ctx, text = undefined) => {
   try {
     await ctx.answerCbQuery(text);
   } catch (error) {
-    // Ignore timeout errors
+    // Ignore timeout errors (normal behavior, tidak perlu log)
     if (error.description?.includes('query is too old') || 
         error.description?.includes('query ID is invalid')) {
-      console.log('⚠️  Callback query expired, ignoring...');
       return;
     }
     throw error;

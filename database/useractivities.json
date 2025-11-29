@@ -517,6 +517,389 @@
         "amount": 223
       },
       "timestamp": "2025-11-28T15:38:02.757Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_deposit",
+      "details": null,
+      "timestamp": "2025-11-29T02:04:58.247Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:05:43.417Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CHATGPT"
+      },
+      "timestamp": "2025-11-29T02:05:47.518Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_product",
+      "details": {
+        "productName": "CHATGPT BUSINES",
+        "productCode": "chatgptbs"
+      },
+      "timestamp": "2025-11-29T02:05:50.594Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CHATGPT"
+      },
+      "timestamp": "2025-11-29T02:06:03.644Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_product",
+      "details": {
+        "productName": "CHATGPT BUSINES",
+        "productCode": "chatgptbs"
+      },
+      "timestamp": "2025-11-29T02:06:06.007Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "purchase_qris",
+      "details": {
+        "productName": "CHATGPT BUSINES",
+        "quantity": 1,
+        "amount": 2426
+      },
+      "timestamp": "2025-11-29T02:06:16.088Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:08:08.527Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:09:34.433Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-29T02:09:38.729Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-29T02:09:42.036Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_deposit",
+      "details": null,
+      "timestamp": "2025-11-29T02:09:45.087Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_admin_contact",
+      "details": null,
+      "timestamp": "2025-11-29T02:09:47.900Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_cara_order",
+      "details": null,
+      "timestamp": "2025-11-29T02:09:51.026Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_stock",
+      "details": null,
+      "timestamp": "2025-11-29T02:09:54.682Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:10:12.879Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:10:16.236Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:10:19.216Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:10:22.711Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:10:25.641Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:10:29.304Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:10:32.396Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-29T02:10:33.066Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-29T02:10:33.075Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:10:36.434Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:10:39.466Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-29T02:10:40.135Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-29T02:10:40.147Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:10:43.599Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-29T02:10:44.524Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-29T02:10:44.790Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:10:47.900Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:10:50.858Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:10:54.792Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:11:45.112Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-29T02:11:45.781Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-29T02:11:45.876Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:11:53.945Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_product",
+      "details": {
+        "productName": "CANVA PRO HEAD",
+        "productCode": "canvahead"
+      },
+      "timestamp": "2025-11-29T02:11:55.745Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:13:43.170Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CHATGPT"
+      },
+      "timestamp": "2025-11-29T02:13:46.697Z"
+    },
+    {
+      "userId": 8005821151,
+      "username": "gaboetbgtt",
+      "action": "view_category",
+      "details": {
+        "categoryName": "CANVA"
+      },
+      "timestamp": "2025-11-29T02:13:50.420Z"
     }
   ]
 }
